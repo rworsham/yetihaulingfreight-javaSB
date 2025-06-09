@@ -26,10 +26,9 @@ public class QuoteRequest {
     private String loadType;
 
     @Email
-    @NotBlank
     private String email;
 
-    @Pattern(regexp = "^(\\+\\d{1,3}[- ]?)?\\d{10}$", message = "Invalid phone number")
+    @Pattern(regexp = "^(?:\\d[-]?){8}\\d$", message = "Must be 9 digits and may include hyphens")
     private String phoneNumber;
 
     public String getPickupZip() {
