@@ -31,6 +31,16 @@ public class QuoteRequest {
     @Pattern(regexp = "^(?:\\d[-]?){8}\\d$", message = "Must be 9 digits and may include hyphens")
     private String phoneNumber;
 
+    private String captchaToken;
+
+    public String getCaptchaToken() {
+        return captchaToken;
+    }
+
+    public void setCaptchaToken(String captchaToken) {
+        this.captchaToken = captchaToken;
+    }
+
     public String getPickupZip() {
         return pickupZip;
     }

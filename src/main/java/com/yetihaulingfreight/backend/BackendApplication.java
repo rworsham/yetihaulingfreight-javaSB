@@ -5,12 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication(
-		exclude = {
-				org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class,
-				org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration.class
-		}
-)
+@SpringBootApplication()
 @EnableScheduling
 @EnableAsync
 public class BackendApplication {

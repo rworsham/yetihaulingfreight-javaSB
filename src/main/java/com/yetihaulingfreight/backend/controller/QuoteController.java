@@ -40,7 +40,7 @@ public class QuoteController {
             }
 
             emailService.sendQuoteEmail(quoteRequest);
-            return ResponseEntity.ok(Map.of("message", "Quote message sent")):
+            return ResponseEntity.ok(Map.of("message", "Quote message sent"));
         } catch (Exception e) {
             log.error("e: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
