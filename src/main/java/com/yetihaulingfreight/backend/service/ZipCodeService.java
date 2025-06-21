@@ -24,7 +24,7 @@ public class ZipCodeService {
     }
 
     public ZipCodeCoordinateResponse getCoordinatesByZip(String zipCode) {
-        String url = "https://geocode.search.hereapi.com/v1/geocode?q=" + zipCode + "&apiKey=" + hereApiKey;
+        String url = "https://geocode.search.hereapi.com/v1/geocode?q=" + zipCode + "&in=countryCode:USA" + "&apiKey=" + hereApiKey;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
