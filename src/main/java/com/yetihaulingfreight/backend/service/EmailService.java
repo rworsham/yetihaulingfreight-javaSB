@@ -1,17 +1,18 @@
 package com.yetihaulingfreight.backend.service;
 
 import com.mailjet.client.ClientOptions;
-import com.yetihaulingfreight.backend.dto.ContactRequest;
-import com.yetihaulingfreight.backend.dto.QuoteRequest;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 import com.mailjet.client.MailjetClient;
 import com.mailjet.client.MailjetRequest;
 import com.mailjet.client.MailjetResponse;
 import com.mailjet.client.errors.MailjetException;
+import com.yetihaulingfreight.backend.dto.ContactRequest;
+import com.yetihaulingfreight.backend.dto.EstimatedRoute;
+import com.yetihaulingfreight.backend.dto.QuoteRequest;
+import jakarta.annotation.PostConstruct;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
@@ -41,7 +42,7 @@ public class EmailService {
                 .build());
     }
 
-    public String sendQuoteEmail(QuoteRequest quoteRequest) {
+    public String sendQuoteEmail(QuoteRequest quoteRequest, EstimatedRoute estimatedRoute) {
         if ((quoteRequest.getEmail() == null || quoteRequest.getEmail().isBlank()) &&
                 (quoteRequest.getPhoneNumber() == null || quoteRequest.getPhoneNumber().isBlank())) {
             throw new IllegalArgumentException("Either email or phone number must be provided.");
@@ -56,7 +57,14 @@ public class EmailService {
                     .append("Width: ").append(quoteRequest.getWidth()).append("\n")
                     .append("Load Type: ").append(quoteRequest.getLoadType()).append("\n")
                     .append("Email: ").append(quoteRequest.getEmail() != null ? quoteRequest.getEmail() : "N/A").append("\n")
-                    .append("Phone Number: ").append(quoteRequest.getPhoneNumber() != null ? quoteRequest.getPhoneNumber() : "N/A");
+                    .append("Phone Number: ").append(quoteRequest.getPhoneNumber() != null ? quoteRequest.getPhoneNumber() : "N/A").append("\n");
+
+            if (estimatedRoute != null) {
+                textBody.append("Estimated Distance: ").append(String.format("%.2f miles", estimatedRoute.getDistanceMiles())).append("\n")
+                        .append("Estimated Duration: ").append(estimatedRoute.getFormattedDuration()).append("\n");
+            } else {
+                textBody.append("Estimated Route: unavailable\n");
+            }
 
             StringBuilder htmlBody = new StringBuilder();
             htmlBody.append("<h3>Quote Request Details</h3>")
@@ -68,8 +76,18 @@ public class EmailService {
                     .append("<li><strong>Width:</strong> ").append(quoteRequest.getWidth()).append("</li>")
                     .append("<li><strong>Load Type:</strong> ").append(quoteRequest.getLoadType()).append("</li>")
                     .append("<li><strong>Email:</strong> ").append(quoteRequest.getEmail() != null ? quoteRequest.getEmail() : "N/A").append("</li>")
-                    .append("<li><strong>Phone Number:</strong> ").append(quoteRequest.getPhoneNumber() != null ? quoteRequest.getPhoneNumber() : "N/A").append("</li>")
-                    .append("</ul>");
+                    .append("<li><strong>Phone Number:</strong> ").append(quoteRequest.getPhoneNumber() != null ? quoteRequest.getPhoneNumber() : "N/A").append("</li>");
+
+            if (estimatedRoute != null) {
+                htmlBody.append("<li><strong>Estimated Distance:</strong> ")
+                        .append(String.format("%.2f miles", estimatedRoute.getDistanceMiles())).append("</li>")
+                        .append("<li><strong>Estimated Duration:</strong> ")
+                        .append(estimatedRoute.getFormattedDuration()).append("</li>");
+            } else {
+                htmlBody.append("<li><strong>Estimated Route:</strong> unavailable</li>");
+            }
+
+            htmlBody.append("</ul>");
 
             MailjetRequest request = new MailjetRequest(com.mailjet.client.resource.Emailv31.resource)
                     .property(com.mailjet.client.resource.Emailv31.MESSAGES, new JSONArray()

@@ -1,7 +1,9 @@
 package com.yetihaulingfreight.backend.controller;
 
+import com.yetihaulingfreight.backend.dto.EstimatedRoute;
 import com.yetihaulingfreight.backend.dto.QuoteRequest;
 import com.yetihaulingfreight.backend.service.EmailService;
+import com.yetihaulingfreight.backend.service.QuoteService;
 import com.yetihaulingfreight.backend.service.RecaptchaService;
 import com.yetihaulingfreight.backend.service.RouteCalculationService;
 import org.slf4j.Logger;
@@ -20,38 +22,21 @@ import java.util.Map;
 public class QuoteController {
 
     private static final Logger log = LoggerFactory.getLogger(QuoteController.class);
-    private final EmailService emailService;
-    private final RouteCalculationService routeCalculationService;
-    private final RecaptchaService recaptchaService;
 
-    public QuoteController(EmailService emailService, RouteCalculationService routeCalculationService, RecaptchaService recaptchaService) {
-        this.emailService = emailService;
-        this.routeCalculationService = routeCalculationService;
-        this.recaptchaService = recaptchaService;
+    private final QuoteService quoteService;
+
+    public QuoteController(QuoteService quoteService) {
+        this.quoteService = quoteService;
     }
 
     @PostMapping("/quote")
-    public ResponseEntity<?> quote(
-            @RequestBody QuoteRequest quoteRequest
-    ) {
+    public ResponseEntity<?> quote(@RequestBody QuoteRequest quoteRequest) {
         try {
-            boolean captchaValid = recaptchaService.verifyCaptcha(quoteRequest.getCaptchaToken(),"quote_form_submit");
-
-            if (!captchaValid) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "CAPTCHA validation failed"));
-            }
-
-            EstimatedRoute estimatedRoute = null;
-            try {
-                estimatedRoute = routeCalculationService.estimateRoute(quoteRequest);
-            } catch (Exception e) {
-                log.warn("Failed to estimate route for quote request: {}", e.getMessage(), e);
-            }
-
-            emailService.sendQuoteEmail(quoteRequest, estimatedRoute);
-
+            quoteService.processQuote(quoteRequest);
             return ResponseEntity.ok(Map.of("message", "Quote message sent"));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", ex.getMessage()));
         } catch (Exception e) {
             log.error("Failed to handle quote request: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
