@@ -7,11 +7,13 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
 @Service
-public class ZipCodeService {
+public class AddressService {
 
     private final RestTemplate restTemplate;
 
@@ -19,12 +21,11 @@ public class ZipCodeService {
     private String hereApiKey;
 
     @Autowired
-    public ZipCodeService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
+    public AddressService(RestTemplate restTemplate) {this.restTemplate = restTemplate;}
 
-    public GeocodingCoordinateResponse getCoordinatesByZip(String zipCode) {
-        String url = "https://geocode.search.hereapi.com/v1/geocode?q=" + zipCode + "&in=countryCode:USA" + "&apiKey=" + hereApiKey;
+    public GeocodingCoordinateResponse getCoordinatesByAddress(String address) {
+        String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
+        String url = "https://geocode.search.hereapi.com/v1/geocode?q=" + encodedAddress + "&apiKey=" + hereApiKey;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -47,10 +48,10 @@ public class ZipCodeService {
                 double lng = ((Number) position.get("lng")).doubleValue();
                 return new GeocodingCoordinateResponse(lat, lng);
             } else {
-                throw new RuntimeException("No geocoding results found for ZIP: " + zipCode);
+                throw new RuntimeException("No geocoding results found for address: " + address);
             }
         } else {
-            throw new RuntimeException("Failed to fetch coordinates");
+            throw new RuntimeException("Failed to fetch coordinates for address");
         }
     }
 }

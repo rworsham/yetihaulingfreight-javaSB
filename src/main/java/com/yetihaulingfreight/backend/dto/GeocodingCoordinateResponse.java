@@ -1,12 +1,12 @@
 package com.yetihaulingfreight.backend.dto;
 
-public class ZipCodeCoordinateResponse {
+public class GeocodingCoordinateResponse {
     private double lat;
     private double lng;
 
-    public ZipCodeCoordinateResponse() {}
+    public GeocodingCoordinateResponse() {}
 
-    public ZipCodeCoordinateResponse(double lat, double lng) {
+    public GeocodingCoordinateResponse(double lat, double lng) {
         this.lat = lat;
         this.lng = lng;
     }
