@@ -1,6 +1,7 @@
 package com.yetihaulingfreight.backend.controller;
 
 import com.yetihaulingfreight.backend.dto.RouteCalculationRequest;
+import com.yetihaulingfreight.backend.dto.RouteEstimationRequest;
 import com.yetihaulingfreight.backend.dto.RouteCalculationResponse;
 import com.yetihaulingfreight.backend.service.RecaptchaService;
 import com.yetihaulingfreight.backend.service.RouteCalculationService;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.PublicKey;
 import java.util.Map;
 
 @RestController
@@ -22,12 +22,10 @@ import java.util.Map;
 public class RouteController {
 
     private static final Logger log = LoggerFactory.getLogger(RouteController.class);
-    private final ZipCodeService zipCodeService;
     private final RouteCalculationService routeCalculationService;
     private final RecaptchaService recaptchaService;
 
-    public RouteController(ZipCodeService zipCodeService, RouteCalculationService routeCalculationService, RecaptchaService recaptchaService) {
-        this.zipCodeService = zipCodeService;
+    public RouteController(RouteCalculationService routeCalculationService, RecaptchaService recaptchaService) {
         this.routeCalculationService = routeCalculationService;
         this.recaptchaService = recaptchaService;
     }
@@ -36,7 +34,7 @@ public class RouteController {
     public ResponseEntity<?> route(@RequestBody RouteCalculationRequest routeCalculationRequest) {
         try {
             boolean captchaValid = recaptchaService.verifyCaptcha(
-                    routeCalculationRequest.getCaptchaToken(), "contact_form_submit"
+                    routeCalculationRequest.getCaptchaToken(), "route_form_submit"
             );
 
             if (!captchaValid) {
