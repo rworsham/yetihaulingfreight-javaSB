@@ -34,7 +34,7 @@ public class QuoteService {
 
         EstimatedRoute estimatedRoute = null;
         try {
-            estimatedRoute = routeCalculationService.estimateRoute(quoteRequest);
+            estimatedRoute = routeCalculationService.estimateRouteQuote(quoteRequest);
         } catch (Exception e) {
             log.warn("Failed to estimate route for quote request: {}", e.getMessage(), e);
         }

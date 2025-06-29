@@ -1,5 +1,6 @@
 package com.yetihaulingfreight.backend.controller;
 
+import com.yetihaulingfreight.backend.dto.EstimatedRoute;
 import com.yetihaulingfreight.backend.dto.RouteCalculationRequest;
 import com.yetihaulingfreight.backend.dto.RouteEstimationRequest;
 import com.yetihaulingfreight.backend.dto.RouteCalculationResponse;
@@ -30,7 +31,28 @@ public class RouteController {
         this.recaptchaService = recaptchaService;
     }
 
-    @PostMapping("/route")
+    @PostMapping("/route/estimate/")
+    public ResponseEntity<?> route(@RequestBody RouteEstimationRequest routeEstimationRequest) {
+        try {
+            boolean captchaValid = recaptchaService.verifyCaptcha(
+                    routeEstimationRequest.getCaptchaToken(), "route_estimate_form_submit"
+            );
+
+            if (!captchaValid) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "CAPTCHA validation failed"));
+            }
+
+            EstimatedRoute route = routeCalculationService.estimateRoute(routeEstimationRequest);
+            return ResponseEntity.ok(route);
+        } catch (Exception e) {
+            log.error("Route calculation failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Route generation failed"));
+        }
+    }
+
+    @PostMapping("/route/calculation/")
     public ResponseEntity<?> route(@RequestBody RouteCalculationRequest routeCalculationRequest) {
         try {
             boolean captchaValid = recaptchaService.verifyCaptcha(

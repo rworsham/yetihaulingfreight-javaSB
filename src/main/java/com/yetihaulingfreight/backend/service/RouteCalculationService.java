@@ -25,7 +25,41 @@ public class RouteCalculationService {
         this.restTemplate = restTemplate;
     }
 
-    public EstimatedRoute estimateRoute(QuoteRequest quoteRequest) {
+    public EstimatedRoute estimateRoute(RouteEstimationRequest request) {
+        GeocodingCoordinateResponse origin = zipCodeService.getCoordinatesByZip(request.getPickupZip());
+        GeocodingCoordinateResponse destination = zipCodeService.getCoordinatesByZip(request.getDeliveryZip());
+
+        String url = String.format(
+                "https://router.hereapi.com/v8/routes?transportMode=truck&origin=%f,%f&destination=%f,%f&return=summary&apikey=%s",
+                origin.getLat(), origin.getLng(),
+                destination.getLat(), destination.getLng(),
+                hereApiKey
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, Map.class);
+
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            Map<String, Object> route = ((List<Map<String, Object>>) response.getBody().get("routes")).get(0);
+            Map<String, Object> section = ((List<Map<String, Object>>) route.get("sections")).get(0);
+            Map<String, Object> summary = (Map<String, Object>) section.get("summary");
+
+            double distanceMeters = ((Number) summary.get("length")).doubleValue();
+            long durationSeconds = ((Number) summary.get("duration")).longValue();
+
+            double distanceMiles = distanceMeters / 1609.34;
+
+            return new EstimatedRoute(distanceMiles, durationSeconds);
+        }
+
+        throw new RuntimeException("Failed to calculate route from HERE API");
+    }
+
+    public EstimatedRoute estimateRouteQuote(QuoteRequest quoteRequest) {
         GeocodingCoordinateResponse origin = zipCodeService.getCoordinatesByZip(quoteRequest.getPickupZip());
         GeocodingCoordinateResponse destination = zipCodeService.getCoordinatesByZip(quoteRequest.getDeliveryZip());
 
