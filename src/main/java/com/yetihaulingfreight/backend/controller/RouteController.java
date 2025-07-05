@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api/admin")
 public class RouteController {
 
     private static final Logger log = LoggerFactory.getLogger(RouteController.class);
