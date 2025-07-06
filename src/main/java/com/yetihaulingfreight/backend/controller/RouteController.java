@@ -6,15 +6,11 @@ import com.yetihaulingfreight.backend.dto.RouteEstimationRequest;
 import com.yetihaulingfreight.backend.dto.RouteCalculationResponse;
 import com.yetihaulingfreight.backend.service.RecaptchaService;
 import com.yetihaulingfreight.backend.service.RouteCalculationService;
-import com.yetihaulingfreight.backend.service.ZipCodeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -31,8 +27,8 @@ public class RouteController {
         this.recaptchaService = recaptchaService;
     }
 
-    @PostMapping("/route/estimate/")
-    public ResponseEntity<?> route(@RequestBody RouteEstimationRequest routeEstimationRequest) {
+    @PostMapping("/route/estimate")
+    public ResponseEntity<?> estimateRoute(@RequestBody RouteEstimationRequest routeEstimationRequest) {
         try {
             boolean captchaValid = recaptchaService.verifyCaptcha(
                     routeEstimationRequest.getCaptchaToken(), "route_estimate_form_submit"
@@ -46,14 +42,14 @@ public class RouteController {
             EstimatedRoute route = routeCalculationService.estimateRoute(routeEstimationRequest);
             return ResponseEntity.ok(route);
         } catch (Exception e) {
-            log.error("Route calculation failed", e);
+            log.error("Route estimation failed", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Route generation failed"));
         }
     }
 
-    @PostMapping("/route/calculation/")
-    public ResponseEntity<?> route(@RequestBody RouteCalculationRequest routeCalculationRequest) {
+    @PostMapping("/route/calculation")
+    public ResponseEntity<?> calculateRoute(@RequestBody RouteCalculationRequest routeCalculationRequest) {
         try {
             boolean captchaValid = recaptchaService.verifyCaptcha(
                     routeCalculationRequest.getCaptchaToken(), "route_form_submit"
