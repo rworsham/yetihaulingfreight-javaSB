@@ -16,6 +16,9 @@ public class RouteCalculationResponse {
     private boolean success;
     private String message;
 
+    private double estimatedFuelUsedGallons;
+    private double estimatedFuelCost;
+
     public String getPickupAddress() {
         return pickupAddress;
     }
@@ -56,14 +59,6 @@ public class RouteCalculationResponse {
         this.formattedTravelTime = formattedTravelTime;
     }
 
-    public double getEstimatedCost() {
-        return estimatedCost;
-    }
-
-    public void setEstimatedCost(double estimatedCost) {
-        this.estimatedCost = estimatedCost;
-    }
-
     public String getRouteSummary() {
         return routeSummary;
     }
@@ -86,5 +81,21 @@ public class RouteCalculationResponse {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public double getEstimatedFuelUsedGallons() {
+        return estimatedFuelUsedGallons;
+    }
+
+    public void setEstimatedFuelUsedGallons(double estimatedFuelUsedGallons) {
+        this.estimatedFuelUsedGallons = estimatedFuelUsedGallons;
+    }
+
+    public double getEstimatedFuelCost() {
+        return estimatedFuelCost;
+    }
+
+    public void setEstimatedFuelCost(double estimatedFuelCost) {
+        this.estimatedFuelCost = estimatedFuelCost;
     }
 }

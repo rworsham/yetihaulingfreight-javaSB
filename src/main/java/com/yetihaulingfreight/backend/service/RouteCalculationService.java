@@ -15,14 +15,21 @@ public class RouteCalculationService {
     private final ZipCodeService zipCodeService;
     private final AddressService addressService;
     private final RestTemplate restTemplate;
+    private final FuelEstimationService fuelEstimationService;
 
     @Value("${HERE_API_KEY}")
     private String hereApiKey;
 
-    public RouteCalculationService(ZipCodeService zipCodeService, AddressService addressService, RestTemplate restTemplate) {
+    public RouteCalculationService(
+            ZipCodeService zipCodeService,
+            AddressService addressService,
+            RestTemplate restTemplate,
+            FuelEstimationService fuelEstimationService
+    ) {
         this.zipCodeService = zipCodeService;
         this.addressService = addressService;
         this.restTemplate = restTemplate;
+        this.fuelEstimationService = fuelEstimationService;
     }
 
     public EstimatedRoute estimateRoute(RouteEstimationRequest request) {
@@ -53,7 +60,10 @@ public class RouteCalculationService {
 
             double distanceMiles = distanceMeters / 1609.34;
 
-            return new EstimatedRoute(distanceMiles, durationSeconds);
+            double gallonsUsed = fuelEstimationService.estimateGallonsUsed(distanceMiles);
+            double fuelCost = fuelEstimationService.estimateFuelCost(distanceMiles, fuelEstimationService.getDefaultDieselPrice());
+
+            return new EstimatedRoute(distanceMiles, durationSeconds, gallonsUsed, fuelCost);
         }
 
         throw new RuntimeException("Failed to calculate route from HERE API");
@@ -87,7 +97,10 @@ public class RouteCalculationService {
 
             double distanceMiles = distanceMeters / 1609.34;
 
-            return new EstimatedRoute(distanceMiles, durationSeconds);
+            double gallonsUsed = fuelEstimationService.estimateGallonsUsed(distanceMiles);
+            double fuelCost = fuelEstimationService.estimateFuelCost(distanceMiles, fuelEstimationService.getDefaultDieselPrice());
+
+            return new EstimatedRoute(distanceMiles, durationSeconds, gallonsUsed, fuelCost);
         }
 
         throw new RuntimeException("Failed to calculate route from HERE API");
@@ -131,6 +144,8 @@ public class RouteCalculationService {
             long durationSeconds = ((Number) summary.get("duration")).longValue();
             double distanceMiles = distanceMeters / 1609.34;
 
+            double gallonsUsed = fuelEstimationService.estimateGallonsUsed(distanceMiles);
+            double fuelCost = fuelEstimationService.estimateFuelCost(distanceMiles, fuelEstimationService.getDefaultDieselPrice());
 
             long hours = durationSeconds / 3600;
             long minutes = (durationSeconds % 3600) / 60;
@@ -142,14 +157,15 @@ public class RouteCalculationService {
             responseDto.setDistanceInMiles(distanceMiles);
             responseDto.setEstimatedTravelTimeInSeconds(durationSeconds);
             responseDto.setFormattedTravelTime(formattedTime);
+            responseDto.setEstimatedFuelUsedGallons(gallonsUsed);
+            responseDto.setEstimatedFuelCost(fuelCost);
             responseDto.setSuccess(true);
             responseDto.setMessage("Route successfully calculated");
-            responseDto.setRouteSummary("Distance: %.2f miles, Time: %s".formatted(distanceMiles, formattedTime));
+            responseDto.setRouteSummary(String.format("Distance: %.2f miles, Time: %s, Fuel Cost: $%.2f", distanceMiles, formattedTime, fuelCost));
 
             return responseDto;
         }
 
         throw new RuntimeException("Failed to calculate route from HERE API using provided address data");
     }
-
 }
